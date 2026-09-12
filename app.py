@@ -649,8 +649,11 @@ def send_line_message(reply_token, message_text):
     except Exception as e:
         print(f"Error sending LINE message: {e}")
 
-@app.route("/line/webhook", methods=["POST"])
+@app.route("/line/webhook", methods=["GET", "POST"])
 def line_webhook():
+    if request.method == "GET":
+        return jsonify({"status": "ready"}), 200
+        
     data = request.json
     events = data.get("events", [])
     
@@ -675,7 +678,7 @@ def line_webhook():
                 elif reply_token:
                     send_line_message(reply_token, "❌ Token ไม่ถูกต้องหรือหมดอายุ กรุณาสร้าง Token ใหม่จากหน้าตั้งค่าเว็บไซต์")
                 
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok"}), 200
 
 @app.route("/admin")
 @admin_required
