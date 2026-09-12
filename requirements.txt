@@ -38,7 +38,7 @@ MarkupSafe==3.0.3
 multitasking==0.0.13
 numpy==1.26.4
 packaging==26.3
-pandas==2.2.0
+pandas==2.2.3
 peewee==4.3.0
 platformdirs==4.11.3
 proto-plus==1.28.2
