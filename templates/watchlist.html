@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .fin-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fin-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.15);
+    }
+    .custom-table th {
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+        background: rgba(15, 23, 42, 0.4);
+    }
+    .custom-table td {
+        padding: 16px;
+        font-size: 13px;
+        color: #f8fafc;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+        vertical-align: middle;
+    }
+    .custom-table tr:hover td {
+        background: rgba(30, 41, 59, 0.5);
+    }
+</style>
+
+<!-- ส่วนหัวข้อหลักและปุ่มเพิ่มหุ้น ให้อยู่ในแถวเดียวกัน ชิดด้านบนสุด -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 4px 0; font-weight: 600;">
+            {% if current_lang == 'th' %}พื้นที่ทำงานติดตามข้อมูล{% else %}MONITORING WORKSPACE{% endif %}
+        </p>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+            {% if current_lang == 'th' %}รายการหุ้นที่สนใจ{% else %}My Watchlist{% endif %}
+        </h2>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">
+            {% if current_lang == 'th' %}ติดตามความเคลื่อนไหวของราคา, เงื่อนไข EMA, สัญญาณ AI และสถานะการแจ้งเตือน{% else %}Track price movement, EMA conditions, AI signals, and alert status.{% endif %}
+        </p>
+    </div>
+
+    <button onclick="openAddWatchlistModal()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); transition: all 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        {% if current_lang == 'th' %}+ เพิ่มหุ้น{% else %}+ Added{% endif %}
+    </button>
+</div>
+
+<!-- Watchlist Table Card -->
+<div class="fin-card" style="border-radius: 16px; overflow: hidden; margin-bottom: 30px;">
+    <div style="overflow-x: auto;">
+        <table class="custom-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr>
+                    <th>{% if current_lang == 'th' %}ชื่อย่อ{% else %}SYMBOL{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}บริษัท{% else %}COMPANY{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}ราคา{% else %}PRICE{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}เปลี่ยนแปลง{% else %}CHANGE{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}เปลี่ยน %{% else %}CHANGE %{% endif %}</th>
+                    <th>EMA50</th>
+                    <th>EMA100</th>
+                    <th>EMA200</th>
+                    <th>{% if current_lang == 'th' %}แนวโน้ม{% else %}TREND{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}สัญญาณ AI{% else %}AI SIGNAL{% endif %}</th>
+                    <th>{% if current_lang == 'th' %}การแจ้งเตือน{% else %}ALERT{% endif %}</th>
+                    <th style="text-align: center;">{% if current_lang == 'th' %}จัดการ{% else %}ACTION{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody id="watchlistTableBody">
+                {% if watchlist and watchlist|length > 0 %}
+                    {% for item in watchlist %}
+                    <tr>
+                        <td><strong style="color: #38bdf8; font-size: 14px;">{{ item.symbol or item.get('symbol', '-') }}</strong></td>
+                        <td style="color: #94a3b8;">{{ item.company or item.name or '-' }}</td>
+                        <td>{{ item.price or '-' }}</td>
+                        <td style="color: {% if item.change is defined and item.change|string != '—' and item.change|float >= 0 %}#22c55e{% else %}#ef4444{% endif %};">{{ item.change or '-' }}</td>
+                        <td style="color: {% if item.change_percent is defined and item.change_percent|string != '—' and item.change_percent|float >= 0 %}#22c55e{% else %}#ef4444{% endif %};">{{ item.change_percent or item.change or '-' }}</td>
+                        <td>{{ item.ema50 or '-' }}</td>
+                        <td>{{ item.ema100 or '-' }}</td>
+                        <td>{{ item.ema200 or '-' }}</td>
+                        <td>
+                            {% set trend_val = (item.trend or 'PENDING')|upper %}
+                            {% if 'UP' in trend_val or 'BULL' in trend_val %}
+                                <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ item.trend }}</span>
+                            {% elif 'DOWN' in trend_val or 'BEAR' in trend_val %}
+                                <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ item.trend }}</span>
+                            {% else %}
+                                <span style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">
+                                    {% if current_lang == 'th' %}รอดำเนินการ{% else %}{{ item.trend or 'PENDING' }}{% endif %}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set sig = (item.ai_signal or 'ANALYZING')|upper %}
+                            {% if 'BULL' in sig or 'BUY' in sig %}
+                                <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">{{ item.ai_signal }}</span>
+                            {% elif 'BEAR' in sig or 'SELL' in sig %}
+                                <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">{{ item.ai_signal }}</span>
+                            {% else %}
+                                <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">
+                                    {% if current_lang == 'th' %}กำลังวิเคราะห์{% else %}{{ item.ai_signal or 'ANALYZING' }}{% endif %}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set alert_text = item.alert_status or 'NO ALERT' %}
+                            {% if alert_text != 'NO ALERT' %}
+                                <a href="{{ url_for('alerts_page') }}" style="color: #22c55e; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3);" title="{% if current_lang == 'th' %}คลิกเพื่อไปดูการแจ้งเตือน{% else %}Click to view alerts{% endif %}">
+                                    🔔 {{ alert_text }}
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('alerts_page') }}" style="color: #f59e0b; font-size: 11px; font-weight: 600; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                    {% if current_lang == 'th' %}ไม่มีการแจ้งเตือน{% else %}NO ALERT{% endif %}
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if item.symbol %}
+                            <a href="{{ url_for('watchlist_delete', symbol=item.symbol) }}" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none;">
+                                {% if current_lang == 'th' %}ลบออก{% else %}Remove{% endif %}
+                            </a>
+                            {% else %}
+                            <a href="#" style="color: #38bdf8; font-size: 12px; font-weight: 600; text-decoration: none;">
+                                {% if current_lang == 'th' %}แจ้งเตือน{% else %}Alert{% endif %}
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td><strong style="color: #38bdf8; font-size: 14px;">NVDA</strong></td>
+                        <td style="color: #94a3b8;">NVIDIA Corporation</td>
+                        <td>{% if current_lang == 'th' %}รอดำเนินการ API{% else %}API pending{% endif %}</td>
+                        <td style="color: #64748b;">—</td>
+                        <td style="color: #64748b;">—</td>
+                        <td style="color: #64748b;">—</td>
+                        <td style="color: #64748b;">—</td>
+                        <td style="color: #64748b;">—</td>
+                        <td><span style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;">{% if current_lang == 'th' %}รอดำเนินการ{% else %}PENDING{% endif %}</span></td>
+                        <td><span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block;">{% if current_lang == 'th' %}กำลังวิเคราะห์{% else %}ANALYZING{% endif %}</span></td>
+                        <td>
+                            <a href="{{ url_for('alerts_page') }}" style="color: #22c55e; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(34, 197, 94, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                                🔔 {% if current_lang == 'th' %}เปิดใช้งานราคา{% else %}PRICE ACTIVE{% endif %}
+                            </a>
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="#" style="color: #38bdf8; font-size: 12px; font-weight: 600; text-decoration: none;">{% if current_lang == 'th' %}แจ้งเตือน{% else %}Alert{% endif %}</a>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ADD TO WATCHLIST MODAL -->
+<div id="addWatchlistModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(51, 65, 85, 0.8); width: 440px; border-radius: 16px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin: 0; color: #f8fafc; font-size: 18px; font-weight: 700;">
+                    {% if current_lang == 'th' %}เพิ่มหุ้นในรายการติดตาม{% else %}Add to Watchlist{% endif %}
+                </h3>
+                <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px;">
+                    {% if current_lang == 'th' %}ค้นหาและเพิ่มหุ้นที่คุณต้องการติดตาม{% else %}Search and add stocks you want to track{% endif %}
+                </p>
+            </div>
+            <button onclick="closeAddWatchlistModal()" style="background: rgba(255,255,255,0.05); border: none; color: #94a3b8; cursor: pointer; font-size: 16px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <form action="{{ url_for('watchlist_add') }}" method="POST" autocomplete="off">
+            <div style="position: relative; margin-bottom: 20px;">
+                <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                    {% if current_lang == 'th' %}ชื่อย่อหุ้น{% else %}Stock Symbol{% endif %}
+                </label>
+                <input type="text" id="watchlistSymbolInput" name="symbol" placeholder="{% if current_lang == 'th' %}พิมพ์ชื่อหุ้น เช่น TSLA, AAPL{% else %}Type symbol e.g. TSLA, AAPL{% endif %}" required style="width: 100%; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none;" oninput="searchLiveStocks(this.value)">
+                
+                <div id="stockSuggestionsBox" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; max-height: 200px; overflow-y: auto; z-index: 20; margin-top: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.7);"></div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeAddWatchlistModal()" style="background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer;">
+                    {% if current_lang == 'th' %}ยกเลิก{% else %}Cancel{% endif %}
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #f8fafc; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);">
+                    {% if current_lang == 'th' %}ยืนยันการเพิ่ม{% else %}Add Watchlist{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let searchTimeout = null;
+
+function openAddWatchlistModal() {
+    document.getElementById('addWatchlistModal').style.display = 'flex';
+}
+
+function closeAddWatchlistModal() {
+    document.getElementById('addWatchlistModal').style.display = 'none';
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+
+function searchLiveStocks(query) {
+    const box = document.getElementById('stockSuggestionsBox');
+    query = query.trim();
+
+    if (query.length === 0) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/search_stocks?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(results => {
+                let html = "";
+                if (results.length > 0) {
+                    results.forEach(stock => {
+                        html += `
+                            <div onclick="selectStockSymbol('${stock.symbol}')" style="padding: 10px 14px; border-bottom: 1px solid rgba(51, 65, 85, 0.4); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'" onmouseout="this.style.background='transparent'">
+                                <div>
+                                    <div style="color: #38bdf8; font-weight: 700; font-size: 13px;">${stock.symbol}</div>
+                                    <div style="color: #94a3b8; font-size: 11px;">${stock.name}</div>
+                                </div>
+                                <div style="color: #64748b; font-size: 11px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">${stock.exchange}</div>
+                            </div>
+                        `;
+                    });
+                    box.innerHTML = html;
+                    box.style.display = "block";
+                } else {
+                    box.style.display = "none";
+                }
+            });
+    }, 300);
+}
+
+function selectStockSymbol(symbol) {
+    document.getElementById('watchlistSymbolInput').value = symbol;
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+</script>
+{% endblock %}

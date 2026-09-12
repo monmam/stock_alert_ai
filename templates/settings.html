@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding-bottom: 40px;">
+    
+    <!-- หัวข้อหน้า -->
+    <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 6px 0; font-size: 26px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+            {% if current_lang == 'th' %}การตั้งค่าระบบ{% else %}System Settings{% endif %}
+        </h1>
+        <p style="color: #64748b; font-size: 13px; margin: 0;">
+            {% if current_lang == 'th' %}จัดการภาษา ธีม และการเชื่อมต่อ LINE ของคุณ{% else %}Manage your language, theme, and LINE notification preferences.{% endif %}
+        </p>
+    </div>
+
+    <!-- ฟอร์มตั้งค่าภาษาหลัก -->
+    <form action="{{ url_for('settings_page') }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- การ์ดตั้งค่าภาษา -->
+        <div style="background: #131b2e; border: 1px solid #1e293b; border-radius: 14px; padding: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 12px;">
+                <div style="background: rgba(37, 99, 235, 0.1); color: #38bdf8; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #f8fafc;">
+                        {% if current_lang == 'th' %}ภาษาของเว็บไซต์{% else %}Website Language{% endif %}
+                    </h3>
+                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                        {% if current_lang == 'th' %}เลือกภาษาที่คุณต้องการใช้งานบนระบบ{% else %}Select your preferred system language{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <!-- ตัวเลือกภาษาไทย -->
+                <label style="background: {{ '#1e293b' if current_lang == 'th' else '#0b1120' }}; border: 1px solid {{ '#2563eb' if current_lang == 'th' else '#1e293b' }}; padding: 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                    <input type="radio" name="language" value="th" {% if current_lang == 'th' %}checked{% endif %} style="accent-color: #2563eb;">
+                    <div>
+                        <div style="color: #f8fafc; font-weight: 600; font-size: 14px;">ภาษาไทย (Thai)</div>
+                        <div style="color: #64748b; font-size: 11px;">แสดงผลเป็นภาษาไทยทั้งระบบ</div>
+                    </div>
+                </label>
+
+                <!-- ตัวเลือกภาษาอังกฤษ -->
+                <label style="background: {{ '#1e293b' if current_lang == 'en' else '#0b1120' }}; border: 1px solid {{ '#2563eb' if current_lang == 'en' else '#1e293b' }}; padding: 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s;">
+                    <input type="radio" name="language" value="en" {% if current_lang == 'en' %}checked{% endif %} style="accent-color: #2563eb;">
+                    <div>
+                        <div style="color: #f8fafc; font-weight: 600; font-size: 14px;">English (อังกฤษ)</div>
+                        <div style="color: #64748b; font-size: 11px;">Display in English system-wide</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- ปุ่มบันทึกการตั้งค่าภาษา -->
+        <div>
+            <button type="submit" style="background: #2563eb; color: #ffffff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: background 0.2s;">
+                {% if current_lang == 'th' %}บันทึกการตั้งค่าภาษา{% else %}Save Changes{% endif %}
+            </button>
+        </div>
+    </form>
+
+    <!-- การ์ดตั้งค่า LINE Account Linking (แยกฟอร์มจัดการ Token) -->
+    <div style="background: #131b2e; border: 1px solid #1e293b; border-radius: 14px; padding: 24px; margin-top: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 12px;">
+            <div style="background: rgba(16, 185, 129, 0.1); color: #34d399; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #f8fafc;">
+                    {% if current_lang == 'th' %}เชื่อมต่อบัญชี LINE (Account Linking){% else %}LINE Account Linking{% endif %}
+                </h3>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                    {% if current_lang == 'th' %}สร้าง Token ส่วนตัวเพื่อส่งให้ LINE OA สำหรับรับแจ้งเตือนเฉพาะคุณ{% else %}Generate a unique token to send via LINE OA for targeted alerts{% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <div style="font-size: 13px; color: #94a3b8; margin-bottom: 6px;">
+                {% if current_lang == 'th' %}สถานะการเชื่อมต่อ:{% else %}Connection Status:{% endif %}
+                {% if conn and conn['status'] == 'CONNECTED' %}
+                    <span style="color: #34d399; font-weight: 600;"> Connected (LINE ID: {{ conn['line_id'] }})</span>
+                {% else %}
+                    <span style="color: #f59e0b; font-weight: 600;"> Not Connected (ยังไม่ได้เชื่อมต่อ)</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" readonly value="{{ conn['token'] if conn and conn['token'] else 'ยังไม่มี Token กรุณากดปุ่มสร้างด้านข้าง' }}" style="flex: 1; background: #0b1120; border: 1px solid #1e293b; color: #38bdf8; padding: 12px 16px; border-radius: 8px; font-size: 14px; font-family: monospace;" onclick="this.select();">
+            
+            <form action="{{ url_for('generate_line_token') }}" method="POST" style="margin: 0;">
+                <button type="submit" style="background: #10b981; color: #ffffff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">
+                    {% if current_lang == 'th' %}สร้าง / รีเซ็ต Token{% else %}Generate / Reset{% endif %}
+                </button>
+            </form>
+        </div>
+        <p style="font-size: 11px; color: #64748b; margin-top: 8px;">
+            * ก๊อปปี้ Token นี้ไปส่งในแชท LINE Official Account ของระบบ เพื่อผูกบัญชีและรับการแจ้งเตือนหุ้นเฉพาะคุณคนเดียว
+        </p>
+    </div>
+
+    <!-- การ์ดตั้งค่ารูปลักษณ์ (Dark Mode) -->
+    <div style="background: #131b2e; border: 1px solid #1e293b; border-radius: 14px; padding: 24px; margin-top: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 12px;">
+            <div style="background: rgba(37, 99, 235, 0.1); color: #38bdf8; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #f8fafc;">
+                    {% if current_lang == 'th' %}รูปลักษณ์ (Theme){% else %}Appearance Theme{% endif %}
+                </h3>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                    {% if current_lang == 'th' %}ปรับแต่งมุมมองการแสดงผล{% else %}Customize your display appearance{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <div style="color: #f8fafc; font-size: 14px; font-weight: 500;">
+                    {% if current_lang == 'th' %}โหมดสีเข้ม (Dark Mode){% else %}Dark Mode{% endif %}
+                </div>
+                <div style="color: #64748b; font-size: 12px;">
+                    {% if current_lang == 'th' %}ใช้งานธีมสีเข้มถนอมสายตาตลอดเวลา{% else %}Optimized dark theme for low-light viewing{% endif %}
+                </div>
+            </div>
+            <span style="background: #1e3a8a; border: 1px solid #2563eb; color: #93c5fd; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                {% if current_lang == 'th' %}เปิดใช้งาน (Active){% else %}Active{% endif %}
+            </span>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

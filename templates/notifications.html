@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="margin-bottom: 25px;">
+    <h1 style="margin: 0 0 6px 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+        {% if current_lang == 'th' %}การแจ้งเตือน{% else %}Notifications{% endif %}
+    </h1>
+    <p style="color: #64748b; font-size: 13px; margin: 0;">
+        {% if current_lang == 'th' %}ติดตามเหตุการณ์ สัญญาณเตือนราคา และสถานะระบบแบบเรียลไทม์{% else %}Track events, price alerts, and system statuses in real-time.{% endif %}
+    </p>
+</div>
+
+<!-- ส่วนแถบกรองหมวดหมู่ (Tabs Filter) -->
+<div style="display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+    <button onclick="filterNotifications('all')" id="tab-all" style="background: #2563eb; color: #ffffff; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+        {% if current_lang == 'th' %}ทั้งหมด{% else %}All{% endif %}
+    </button>
+    <button onclick="filterNotifications('price')" id="tab-price" style="background: #131b2e; color: #94a3b8; border: 1px solid #1e293b; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+        {% if current_lang == 'th' %}แจ้งเตือนราคา{% else %}Price Alert{% endif %}
+    </button>
+    <button onclick="filterNotifications('ema')" id="tab-ema" style="background: #131b2e; color: #94a3b8; border: 1px solid #1e293b; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+        EMA Alert
+    </button>
+    <button onclick="filterNotifications('ai')" id="tab-ai" style="background: #131b2e; color: #94a3b8; border: 1px solid #1e293b; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+        AI Signal
+    </button>
+    <button onclick="filterNotifications('system')" id="tab-system" style="background: #131b2e; color: #94a3b8; border: 1px solid #1e293b; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+        {% if current_lang == 'th' %}ระบบ{% else %}System{% endif %}
+    </button>
+</div>
+
+<!-- รายการการแจ้งเตือน (Notifications List Container) -->
+<div id="notifications-list" style="display: flex; flex-direction: column; gap: 12px;">
+    
+    <!-- ตัวอย่างการแจ้งเตือนประเภท System (ตามรูปภาพต้นฉบับของคุณ) -->
+    <div class="notification-item" data-category="system" style="background: #131b2e; border: 1px solid #1e293b; border-radius: 12px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 16px; transition: border-color 0.2s;">
+        <div style="background: #1e3a8a; border: 1px solid #2563eb; color: #93c5fd; padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"></path><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path></svg>
+        </div>
+        <div style="flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #f8fafc;">
+                    {% if current_lang == 'th' %}ระบบตรวจสอบพร้อมใช้งาน{% else %}Monitoring system ready{% endif %}
+                </h4>
+                <span style="color: #64748b; font-size: 11px;">
+                    {% if current_lang == 'th' %}เพิ่งเกิดขึ้น{% else %}Just now{% endif %}
+                </span>
+            </div>
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8;">
+                {% if current_lang == 'th' %}เชื่อมต่อข้อมูลตลาดและการแจ้งเตือนเพื่อรับเหตุการณ์แบบเรียลไทม์{% else %}Connect market data and notifications to receive real-time events.{% endif %}
+            </p>
+            <span style="background: #1e293b; border: 1px solid #334155; color: #64748b; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500;">
+                {% if current_lang == 'th' %}สถานะระบบ{% else %}System status{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- ตัวอย่างการแจ้งเตือนประเภท Price Alert (สามารถใช้ Loop แสดงข้อมูลจริงจาก Backend ได้) -->
+    <!-- 
+    <div class="notification-item" data-category="price" style="background: #131b2e; border: 1px solid #1e293b; border-radius: 12px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 16px;">
+        <div style="background: #065f46; border: 1px solid #059669; color: #6ee7b7; padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        </div>
+        <div style="flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #f8fafc;">AAPL Price Alert Triggered</h4>
+                <span style="color: #64748b; font-size: 11px;">10 mins ago</span>
+            </div>
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8;">Apple Inc. reached your target price of $180.0</p>
+            <span style="background: #1e293b; border: 1px solid #334155; color: #34d399; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500;">Price Alert</span>
+        </div>
+    </div>
+    -->
+
+</div>
+
+<!-- Script สำหรับสลับหมวดหมู่การแจ้งเตือนแบบ Interactive -->
+<script>
+function filterNotifications(category) {
+    // จัดการเปลี่ยนสีปุ่ม Tabs
+    const tabs = ['all', 'price', 'ema', 'ai', 'system'];
+    tabs.forEach(tab => {
+        const btn = document.getElementById('tab-' + tab);
+        if (tab === category) {
+            btn.style.background = '#2563eb';
+            btn.style.color = '#ffffff';
+            btn.style.border = 'none';
+        } else {
+            btn.style.background = '#131b2e';
+            btn.style.color = '#94a3b8';
+            btn.style.border = '1px solid #1e293b';
+        }
+    });
+
+    // กรองรายการแสดงผล
+    const items = document.querySelectorAll('.notification-item');
+    items.forEach(item => {
+        if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

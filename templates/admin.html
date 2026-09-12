@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+    
+    <!-- Header Section -->
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: #38bdf8; letter-spacing: 1px; text-transform: uppercase;">{{ 'พื้นที่จำกัดสำหรับผู้ดูแลระบบ' if current_lang == 'th' else 'Restricted Workspace' }}</span>
+        <h1 style="margin: 0; font-size: 24px; color: #f8fafc; font-weight: 700; letter-spacing: -0.5px;">{{ 'การบริหารจัดการระบบ' if current_lang == 'th' else 'System Administration' }}</h1>
+    </div>
+
+    <!-- 4 Stats Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+            <span style="font-size: 13px; font-weight: 500; color: #94a3b8;">{{ 'ผู้ใช้งานทั้งหมด' if current_lang == 'th' else 'Total Users' }}</span>
+            <span style="font-size: 28px; font-weight: 700; color: #f8fafc;">{{ total_users if total_users is defined and total_users != none else '—' }}</span>
+        </div>
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+            <span style="font-size: 13px; font-weight: 500; color: #94a3b8;">{{ 'ผู้ใช้งานที่ใช้งานอยู่' if current_lang == 'th' else 'Active Users' }}</span>
+            <span style="font-size: 28px; font-weight: 700; color: #22c55e;">{{ active_users if active_users is defined and active_users != none else '—' }}</span>
+        </div>
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+            <span style="font-size: 13px; font-weight: 500; color: #94a3b8;">{{ 'การแจ้งเตือนที่ใช้งาน' if current_lang == 'th' else 'Active Alerts' }}</span>
+            <span style="font-size: 28px; font-weight: 700; color: #38bdf8;">{{ active_alerts if active_alerts is defined and active_alerts != none else '—' }}</span>
+        </div>
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+            <span style="font-size: 13px; font-weight: 500; color: #94a3b8;">{{ 'การแจ้งเตือนที่ส่งแล้ว' if current_lang == 'th' else 'Notifications Sent' }}</span>
+            <span style="font-size: 28px; font-weight: 700; color: #f8fafc;">{{ notifications_sent if notifications_sent is defined and notifications_sent != none else '—' }}</span>
+        </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">
+        <div style="padding: 20px 24px; border-bottom: 1px solid #1e293b; display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0; font-size: 16px; color: #f8fafc; font-weight: 600;">{{ 'จัดการผู้ใช้งาน' if current_lang == 'th' else 'User Management' }}</h3>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                <thead>
+                    <tr style="background: rgba(15, 23, 42, 0.5); border-bottom: 1px solid #1e293b; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <th style="padding: 14px 24px; font-weight: 600;">{{ 'ผู้ใช้' if current_lang == 'th' else 'User' }}</th>
+                        <th style="padding: 14px 20px; font-weight: 600;">{{ 'สถานะ' if current_lang == 'th' else 'Status' }}</th>
+                        <th style="padding: 14px 20px; font-weight: 600;">{{ 'รายการเฝ้าดู' if current_lang == 'th' else 'Watchlist' }}</th>
+                        <th style="padding: 14px 20px; font-weight: 600;">{{ 'แจ้งเตือน' if current_lang == 'th' else 'Alerts' }}</th>
+                        <th style="padding: 14px 20px; font-weight: 600;">{{ 'วันที่สร้าง' if current_lang == 'th' else 'Created' }}</th>
+                        <th style="padding: 14px 24px; font-weight: 600; text-align: right;">{{ 'จัดการ' if current_lang == 'th' else 'Action' }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if users_list and users_list|length > 0 %}
+                        {% for user in users_list %}
+                        <tr style="border-bottom: 1px solid #1e293b; transition: background 0.2s;" onmouseover="this.style.background='#162032'" onmouseout="this.style.background='transparent'">
+                            <td style="padding: 16px 24px; color: #f8fafc; font-weight: 500;">
+                                {{ user.email }}<br>
+                                <span style="font-size: 11px; color: #64748b;">@{{ user.username }}</span>
+                            </td>
+                            
+                            <!-- Status -->
+                            <td style="padding: 16px 20px;">
+                                {% if user.status|string|lower == 'active' %}
+                                    <span style="background: rgba(34,197,94,0.1); color: #22c55e; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">{{ 'ใช้งาน' if current_lang == 'th' else 'Active' }}</span>
+                                {% else %}
+                                    <span style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">{{ 'ไม่ใช้งาน' if current_lang == 'th' else 'No Active' }}</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Watchlist -->
+                            <td style="padding: 16px 20px;">
+                                <div style="color: #f8fafc; font-weight: 500;">{{ user.watchlist_count|default(0) }} {{ 'รายการ' if current_lang == 'th' else 'items' }}</div>
+                                <a href="javascript:void(0);" 
+                                   class="btn-view-modal" 
+                                   data-title="{{ 'รายการเฝ้าดูของ' if current_lang == 'th' else 'Watchlist of' }} {{ user.email }}" 
+                                   data-items='{{ user.watchlist_items | tojson | safe }}'
+                                   style="font-size: 11px; color: #38bdf8; text-decoration: none; font-weight: 500;">
+                                    {{ 'คลิกดูรายการ' if current_lang == 'th' else 'View items' }}
+                                </a>
+                            </td>
+                            
+                            <!-- Alerts -->
+                            <td style="padding: 16px 20px;">
+                                <div style="color: #f8fafc; font-weight: 500;">{{ user.alerts_count|default(0) }} {{ 'รายการ' if current_lang == 'th' else 'items' }}</div>
+                                <a href="javascript:void(0);" 
+                                   class="btn-view-modal" 
+                                   data-title="{{ 'การแจ้งเตือนของ' if current_lang == 'th' else 'Alerts of' }} {{ user.email }}" 
+                                   data-items='{{ user.alerts_items | tojson | safe }}'
+                                   style="font-size: 11px; color: #38bdf8; text-decoration: none; font-weight: 500;">
+                                    {{ 'คลิกดูรายการ' if current_lang == 'th' else 'View items' }}
+                                </a>
+                            </td>
+                            
+                            <td style="padding: 16px 20px; color: #64748b;">{{ user.created_at|default('-') }}</td>
+                            
+                            <!-- Action -->
+                            <td style="padding: 16px 24px; text-align: right;">
+                                <button type="button" 
+                                        class="btn-manage-user"
+                                        data-userid="{{ user.id }}"
+                                        data-email="{{ user.email }}"
+                                        style="background: #1e293b; border: 1px solid #334155; color: #38bdf8; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;">
+                                    {{ 'จัดการ' if current_lang == 'th' else 'Manage' }}
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 60px 24px; text-align: center; color: #64748b; font-size: 13px;">
+                                {{ 'ข้อมูลผู้ใช้งานจะแสดงที่นี่เมื่อมีการเชื่อมต่อระบบหลังบ้าน' if current_lang == 'th' else 'User records will be available through an authenticated backend administration endpoint.' }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bottom Action Button -->
+    <div>
+        <a href="{{ url_for('admin_health_page') }}" style="display: inline-flex; align-items: center; gap: 8px; background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            {{ 'ดูสถานะระบบ' if current_lang == 'th' else 'View System Health' }}
+        </a>
+    </div>
+
+</div>
+
+<!-- Modal สำหรับดูรายการ Watchlist / Alerts -->
+<div id="detailModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; width: 100%; max-width: 450px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 12px;">
+            <h3 id="modalTitle" style="margin: 0; font-size: 16px; color: #f8fafc; font-weight: 600;">{{ 'รายละเอียด' if current_lang == 'th' else 'Details' }}</h3>
+            <button onclick="closeDetailModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;">&times;</button>
+        </div>
+        <div id="modalContent" style="color: #cbd5e1; font-size: 14px; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+        <div style="text-align: right; padding-top: 8px;">
+            <button onclick="closeDetailModal()" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 6px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;">{{ 'ปิด' if current_lang == 'th' else 'Close' }}</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal สำหรับ Manage User -->
+<div id="manageUserModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 16px; color: #f8fafc; font-weight: 600;">{{ 'จัดการผู้ใช้:' if current_lang == 'th' else 'Manage User:' }} <span id="manageUserEmail" style="color: #38bdf8;"></span></h3>
+            <button onclick="closeManageModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <form id="manageForm" method="POST" action="" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 500;">{{ 'รหัสผ่านใหม่ (ปล่อยว่างถ้าไม่ต้องการเปลี่ยน)' if current_lang == 'th' else 'New Password (leave blank to keep current)' }}</label>
+                <input type="password" name="new_password" placeholder="{{ 'กรอกรหัสผ่านใหม่...' if current_lang == 'th' else 'Enter new password...' }}" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 10px 12px; border-radius: 8px; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-size: 12px; color: #94a3b8; font-weight: 500;">{{ 'ยืนยันรหัสผ่านใหม่' if current_lang == 'th' else 'Confirm Password' }}</label>
+                <input type="password" name="confirm_password" placeholder="{{ 'ยืนยันรหัสผ่านใหม่...' if current_lang == 'th' else 'Confirm new password...' }}" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; padding: 10px 12px; border-radius: 8px; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #1e293b;">
+                <a id="deleteUserLink" href="#" onclick="return confirm('{{ 'คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้นี้?' if current_lang == 'th' else 'Are you sure you want to delete this user?' }}');" style="color: #ef4444; font-size: 12px; text-decoration: none; font-weight: 500;">
+                    🗑️ {{ 'ลบผู้ใช้นี้' if current_lang == 'th' else 'Delete user' }}
+                </a>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" onclick="closeManageModal()" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">{{ 'ยกเลิก' if current_lang == 'th' else 'Cancel' }}</button>
+                    <button type="submit" style="background: #38bdf8; border: none; color: #0f172a; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">{{ 'บันทึกการเปลี่ยนแปลง' if current_lang == 'th' else 'Save Changes' }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const detailModal = document.getElementById('detailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const isThai = "{{ current_lang }}" === "th";
+
+        document.querySelectorAll('.btn-view-modal').forEach(function(element) {
+            element.addEventListener('click', function() {
+                const title = this.getAttribute('data-title');
+                let rawItems = this.getAttribute('data-items');
+                let items = [];
+
+                try {
+                    items = JSON.parse(rawItems);
+                } catch (e) {
+                    items = [];
+                }
+
+                modalTitle.innerText = title;
+                modalContent.innerHTML = '';
+
+                if (!items || items.length === 0) {
+                    modalContent.innerHTML = `<div style="color: #64748b; text-align: center; padding: 20px;">${isThai ? 'ไม่พบรายการข้อมูล' : 'No items found'}</div>`;
+                } else {
+                    items.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.style.padding = '10px 12px';
+                        div.style.background = '#1e293b';
+                        div.style.borderRadius = '8px';
+                        div.style.border = '1px solid #334155';
+                        div.innerHTML = `<span style="color: #38bdf8; font-weight: 600; margin-right: 8px;">#${index + 1}</span> ${item}`;
+                        modalContent.appendChild(div);
+                    });
+                }
+
+                detailModal.style.display = 'flex';
+            });
+        });
+
+        const manageModal = document.getElementById('manageUserModal');
+        const manageUserEmail = document.getElementById('manageUserEmail');
+        const manageForm = document.getElementById('manageForm');
+        const deleteUserLink = document.getElementById('deleteUserLink');
+
+        document.querySelectorAll('.btn-manage-user').forEach(function(element) {
+            element.addEventListener('click', function() {
+                const userId = this.getAttribute('data-userid');
+                const email = this.getAttribute('data-email');
+
+                manageUserEmail.innerText = email;
+                
+                manageForm.action = `/admin/edit-user/${userId}`;
+                deleteUserLink.href = `/admin/delete-user/${userId}`;
+
+                manageModal.style.display = 'flex';
+            });
+        });
+    });
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function closeManageModal() {
+        document.getElementById('manageUserModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const detailModal = document.getElementById('detailModal');
+        const manageModal = document.getElementById('manageUserModal');
+        if (event.target === detailModal) {
+            closeDetailModal();
+        }
+        if (event.target === manageModal) {
+            closeManageModal();
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Alert AI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Modern Fintech Theme Customization for Sidebar */
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 16px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 4px;
+        }
+        .sidebar-nav a:hover {
+            background: rgba(30, 41, 59, 0.6);
+            color: #cbd5e1;
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+        }
+        .sidebar-nav svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-nav a.active svg {
+            stroke: #38bdf8;
+            filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
+        }
+        .sidebar-nav a:hover svg {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" style="display: flex; height: 100vh; overflow: hidden;">
+        <!-- Sidebar -->
+        <aside class="sidebar" style="background: #070d19; border-right: 1px solid #1e293b; width: 260px; display: flex; flex-direction: column; flex-shrink: 0;">
+            <div class="sidebar-brand" style="padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(30, 41, 59, 0.5);">
+                <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); padding: 8px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                </div>
+                <h2 style="margin: 0; font-size: 18px; color: #f8fafc; font-weight: 700; letter-spacing: -0.5px;">Stock<span style="color: #38bdf8;">AI</span></h2>
+            </div>
+
+            <!-- Main Menu Navigation -->
+            <nav class="sidebar-nav" style="padding: 20px 16px; display: flex; flex-direction: column; overflow-y: auto; flex-grow: 1;">
+                <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    {{ t('dashboard') }}
+                </a>
+                <a href="{{ url_for('watchlist_page') }}" class="{{ 'active' if request.endpoint == 'watchlist_page' else '' }}">
+                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    {{ t('watchlist') }}
+                </a>
+                <a href="{{ url_for('alerts_page') }}" class="{{ 'active' if request.endpoint == 'alerts_page' else '' }}">
+                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    {{ t('alerts') }}
+                </a>
+                <a href="{{ url_for('notifications_page') }}" class="{{ 'active' if request.endpoint == 'notifications_page' else '' }}">
+                    <svg viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>
+                    {{ t('notifications') }}
+                </a>
+
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <a href="{{ url_for('admin_page') }}" class="{{ 'active' if request.endpoint == 'admin_page' else '' }}">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Admin
+                </a>
+                {% endif %}
+            </nav>
+
+            <!-- Bottom User Widget (Profile Card, Settings & Logout) -->
+            <div style="padding: 16px; border-top: 1px solid rgba(30, 41, 59, 0.5); background: rgba(7, 13, 25, 0.5);">
+                <!-- 1. Profile Card (Links to profile_page) -->
+                <a href="{{ url_for('profile_page') }}" style="display: flex; align-items: center; gap: 12px; background: #0f172a; border: 1px solid #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='#38bdf8'; this.style.background='#131c31'" onmouseout="this.style.borderColor='#1e293b'; this.style.background='#0f172a'">
+                    <div style="width: 36px; height: 36px; background: #1e293b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #38bdf8; flex-shrink: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <div style="overflow: hidden;">
+                        <div style="color: #f8fafc; font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Tong{% endif %}
+                        </div>
+                        <div style="color: #22c55e; font-size: 11.5px; font-weight: 500; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                            <span style="width: 5px; height: 5px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 5px #22c55e;"></span> Active plan
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 2. Settings & Logout Links -->
+                <div class="sidebar-nav" style="padding: 0; display: flex; flex-direction: column; gap: 2px;">
+                    <a href="{{ url_for('settings_page') }}" class="{{ 'active' if request.endpoint == 'settings_page' else '' }}" style="margin-bottom: 0;">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        {{ t('settings') }}
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('logout') }}" style="color: #ef4444; margin-bottom: 0;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'" onmouseout="this.style.background='transparent'; this.style.color='#ef4444'">
+                        <svg viewBox="0 0 24 24" style="stroke: #ef4444;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        {{ t('logout') }}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;">
+            <header class="topbar" style="display: flex; justify-content: space-between; align-items: center; padding: 0 30px; height: 75px; background: rgba(7, 13, 25, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid #1e293b; position: sticky; top: 0; z-index: 100;">
+                <div style="position: relative; display: flex; align-items: center; width: 420px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="globalStockSearch" placeholder="{{ t('search_placeholder') }}" autocomplete="off" 
+                        style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 10px 14px 10px 40px; border-radius: 10px; font-size: 13px; outline: none; transition: all 0.2s;"
+                        oninput="searchGlobalStocks(this.value)"
+                        onkeydown="handleGlobalSearchKey(event)"
+                        onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 0 3px rgba(56,189,248,0.15)'"
+                        onblur="this.style.borderColor='#334155'; this.style.boxShadow='none'">
+                    
+                    <div id="globalSearchSuggestions" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; max-height: 260px; overflow-y: auto; z-index: 1000; margin-top: 6px; box-shadow: 0 15px 30px -5px rgba(0,0,0,0.7);">
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <div style="text-align: right; display: flex; flex-direction: column; gap: 3px; background: rgba(15, 23, 42, 0.6); padding: 6px 14px; border-radius: 10px; border: 1px solid #1e293b;">
+                        <span id="marketStatusText" style="font-size: 11.5px; color: #ef4444; font-weight: 500; display: flex; align-items: center; gap: 6px; justify-content: flex-end;">
+                            <span id="marketStatusDot" style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></span>
+                            <span id="marketStatusLabel">Market Off</span>
+                        </span>
+                    </div>
+                    <a href="{{ url_for('notifications_page') }}" style="background: #0f172a; border: 1px solid #334155; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.borderColor='#38bdf8'; this.style.color='#38bdf8'" onmouseout="this.style.borderColor='#334155'; this.style.color='#94a3b8'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </a>
+                    <div style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #ffffff; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">
+                        TO
+                    </div>
+                </div>
+            </header>
+            <div class="content-body" style="padding: 30px; background: #0b1120; min-height: calc(100vh - 75px);">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+    let globalSearchTimeout = null;
+
+    function searchGlobalStocks(query) {
+        const box = document.getElementById('globalSearchSuggestions');
+        query = query.trim();
+
+        if (query.length === 0) {
+            box.style.display = "none";
+            box.innerHTML = "";
+            return;
+        }
+
+        clearTimeout(globalSearchTimeout);
+        globalSearchTimeout = setTimeout(() => {
+            fetch(`/api/search_stocks?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(results => {
+                    let html = "";
+                    if (results.length > 0) {
+                        results.forEach(stock => {
+                            html += `
+                                <div onclick="window.location.href='/stocks/${stock.symbol}'" style="padding: 10px 14px; border-bottom: 1px solid #1e293b; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='transparent'">
+                                    <div>
+                                        <div style="color: #38bdf8; font-weight: 600; font-size: 13.5px;">${stock.symbol}</div>
+                                        <div style="color: #94a3b8; font-size: 11px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${stock.name}</div>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 11px; background: #070d19; padding: 2px 6px; border-radius: 4px;">${stock.exchange}</div>
+                                </div>
+                            `;
+                        });
+                        box.innerHTML = html;
+                        box.style.display = "block";
+                    } else {
+                        box.style.display = "none";
+                        box.innerHTML = "";
+                    }
+                })
+                .catch(err => console.error("Search error:", err));
+        }, 300);
+    }
+
+    function handleGlobalSearchKey(event) {
+        if (event.key === 'Enter') {
+            const query = event.target.value.trim().toUpperCase();
+            if (query) {
+                window.location.href = `/stocks/${query}`;
+            }
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#globalStockSearch') && !e.target.closest('#globalSearchSuggestions')) {
+            const box = document.getElementById('globalSearchSuggestions');
+            if (box) box.style.display = 'none';
+        }
+    });
+
+    function checkMarketOnOff() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const estOffset = -4; 
+        const nyTime = new Date(utc + (3600000 * estOffset));
+        
+        const day = nyTime.getDay(); 
+        const hours = nyTime.getHours();
+        const minutes = nyTime.getMinutes();
+        const currentTimeMinutes = hours * 60 + minutes;
+
+        const marketOpenMinutes = 9 * 60 + 30;  
+        const marketCloseMinutes = 16 * 60;     
+
+        const isWeekday = (day >= 1 && day <= 5);
+        const isOpen = isWeekday && (currentTimeMinutes >= marketOpenMinutes && currentTimeMinutes < marketCloseMinutes);
+
+        const label = document.getElementById('marketStatusLabel');
+        const dot = document.getElementById('marketStatusDot');
+        const container = document.getElementById('marketStatusText');
+
+        if (isOpen) {
+            label.innerText = "Market On";
+            container.style.color = "#22c55e";
+            dot.style.background = "#22c55e";
+            dot.style.boxShadow = "0 0 6px #22c55e";
+        } else {
+            label.innerText = "Market Off";
+            container.style.color = "#ef4444";
+            dot.style.background = "#ef4444";
+            dot.style.boxShadow = "none";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        checkMarketOnOff();
+        setInterval(checkMarketOnOff, 60000);
+    });
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

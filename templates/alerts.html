@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .fin-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fin-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.15);
+    }
+</style>
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+<!-- ส่วนหัวข้อ Header -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #38bdf8;"></span>
+            <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; font-weight: 600;">
+                {% if current_lang == 'th' %}ระบบติดตามอัตโนมัติ{% else %}AUTOMATED MONITORING SYSTEM{% endif %}
+            </p>
+        </div>
+        <h2 style="margin: 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">
+            {% if current_lang == 'th' %}รายการแจ้งเตือนที่ใช้งานอยู่{% else %}Active Alerts{% endif %}
+        </h2>
+        <p style="color: #94a3b8; font-size: 14px; margin: 6px 0 0 0;">
+            {% if current_lang == 'th' %}กำหนดเงื่อนไขทางเทคนิคหรือราคาเพื่อรับการแจ้งเตือนเมื่อเกิดเหตุการณ์ตามที่คุณตั้งไว้{% else %}Set technical or price conditions to receive notifications when your criteria are met.{% endif %}
+        </p>
+    </div>
+    <!-- ปุ่ม Create Alert -->
+    <button onclick="openCreateAlertModal()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); transition: all 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        {% if current_lang == 'th' %}สร้างการแจ้งเตือน{% else %}Create Alert{% endif %}
+    </button>
+</div>
+
+<!-- ส่วนแสดง Active Alerts -->
+{% if alerts and alerts|length > 0 %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    {% for alert in alerts %}
+    <div class="fin-card" style="padding: 20px; border-radius: 16px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: #38bdf8; font-weight: 700; font-size: 18px;">{{ alert.symbol }}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">{{ alert.alert_type }}</span>
+                <a href="#" onclick="openDeleteConfirmModal('{{ url_for('alert_delete', id=alert.id) }}')" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 4px 8px; border-radius: 6px; font-size: 11px; text-decoration: none;">
+                    {% if current_lang == 'th' %}ลบ{% else %}Delete{% endif %}
+                </a>
+            </div>
+        </div>
+        <div style="color: #94a3b8; font-size: 13px; margin-bottom: 8px;">
+            {% if current_lang == 'th' %}ราคาเป้าหมาย{% else %}Target Price{% endif %}: <strong style="color: #f8fafc;">{{ alert.target }}</strong>
+        </div>
+        <div style="color: #64748b; font-size: 11px;">
+            {% if current_lang == 'th' %}สถานะ{% else %}Status{% endif %}: {{ alert.status }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- ส่วนแสดงเมื่อไม่มีข้อมูล -->
+<div class="fin-card" style="padding: 60px 20px; border-radius: 16px; text-align: center; margin-bottom: 30px;">
+    <div style="width: 56px; height: 56px; background: rgba(56, 189, 248, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: #38bdf8;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+    </div>
+    <h3 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 18px; font-weight: 600;">
+        {% if current_lang == 'th' %}ไม่มีการแจ้งเตือนที่ใช้งานอยู่{% else %}No Active Alerts{% endif %}
+    </h3>
+    <p style="margin: 0 0 20px 0; color: #94a3b8; font-size: 13px;">
+        {% if current_lang == 'th' %}สร้างการแจ้งเตือนราคาหรือ EMA เพื่อติดตามหุ้นใน Watchlist ของคุณ{% else %}Create a price or EMA alert to track stocks in your watchlist.{% endif %}
+    </p>
+    <button onclick="openCreateAlertModal()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);">
+        {% if current_lang == 'th' %}สร้างการแจ้งเตือน{% else %}Create Alert{% endif %}
+    </button>
+</div>
+{% endif %}
+
+<!-- ส่วน Alert History -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h3 style="margin: 0; font-size: 17px; font-weight: 600; color: #f8fafc;">
+        {% if current_lang == 'th' %}ประวัติการแจ้งเตือน{% else %}Alert History{% endif %}
+    </h3>
+    <button style="background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(51, 65, 85, 0.8); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        {% if current_lang == 'th' %}ดูประวัติทั้งหมด{% else %}View All History{% endif %}
+    </button>
+</div>
+
+<div class="fin-card" style="padding: 24px; border-radius: 12px; text-align: center;">
+    <p style="margin: 0; color: #64748b; font-size: 13px;">
+        {% if current_lang == 'th' %}การแจ้งเตือนที่ถูกทริกเกอร์จะแสดงที่นี่ หลังจากตัวจัดตารางเวลาในระบบตรวจสอบเงื่อนไขของคุณสำเร็จ{% else %}Triggered alerts will appear here after the system scheduler successfully checks your conditions.{% endif %}
+    </p>
+</div>
+
+<!-- CREATE ALERT POPUP MODAL -->
+<div id="createAlertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(51, 65, 85, 0.8); width: 520px; border-radius: 16px; padding: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); position: relative;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px;">
+            <div>
+                <h3 style="margin: 0; color: #f8fafc; font-size: 18px; font-weight: 700;">
+                    {% if current_lang == 'th' %}สร้างการแจ้งเตือนราคา (Create Price Alert){% else %}Create Price Alert{% endif %}
+                </h3>
+                <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px;">
+                    {% if current_lang == 'th' %}ตั้งค่าเงื่อนไขเพื่อรับการแจ้งเตือนราคาหุ้นแบบเรียลไทม์{% else %}Set conditions to receive real-time stock price alerts.{% endif %}
+                </p>
+            </div>
+            <button onclick="closeCreateAlertModal()" style="background: rgba(255,255,255,0.05); border: none; color: #94a3b8; cursor: pointer; font-size: 16px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">✕</button>
+        </div>
+
+        <form id="createAlertForm" onsubmit="submitAlert(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 16px;">
+                <div style="position: relative;">
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                        {% if current_lang == 'th' %}ชื่อหุ้น (Stock Symbol){% else %}Stock Symbol{% endif %}
+                    </label>
+                    <input type="text" id="alertSymbolInput" name="symbol" placeholder="{% if current_lang == 'th' %}พิมพ์ชื่อหุ้น เช่น NVDA, AAPL{% else %}e.g. NVDA, AAPL{% endif %}" autocomplete="off" required style="width: 100%; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;" oninput="searchLiveStocks(this.value)">
+                    
+                    <div id="stockSuggestionsBox" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; max-height: 220px; overflow-y: auto; z-index: 20; margin-top: 4px; box-shadow: 0 10px 25px -3px rgba(0,0,0,0.7);">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                        {% if current_lang == 'th' %}ประเภทการแจ้งเตือน{% else %}Alert Type{% endif %}
+                    </label>
+                    <select name="alert_type" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+                        <option value="PRICE ABOVE">{% if current_lang == 'th' %}ราคาสูงกว่า (PRICE ABOVE){% else %}PRICE ABOVE{% endif %}</option>
+                        <option value="PRICE BELOW">{% if current_lang == 'th' %}ราคาต่ำกว่า (PRICE BELOW){% else %}PRICE BELOW{% endif %}</option>
+                        <option value="EMA GOLDEN CROSS">EMA GOLDEN CROSS</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 24px;">
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                        {% if current_lang == 'th' %}ราคาเป้าหมาย (Target Price){% else %}Target Price{% endif %}
+                    </label>
+                    <input type="number" step="any" name="target" placeholder="{% if current_lang == 'th' %}ระบุราคา{% else %}Enter price{% endif %}" required style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                        {% if current_lang == 'th' %}ช่วงราคา % (Range %){% else %}Range %{% endif %}
+                    </label>
+                    <input type="text" name="range_percent" placeholder="{% if current_lang == 'th' %}สำหรับโซนราคา{% else %}For price zone{% endif %}" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeCreateAlertModal()" style="background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    {% if current_lang == 'th' %}ยกเลิก{% else %}Cancel{% endif %}
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #f8fafc; border: none; padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);">
+                    {% if current_lang == 'th' %}สร้างการแจ้งเตือน{% else %}Create Alert{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(51, 65, 85, 0.8); width: 400px; border-radius: 16px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); text-align: center;">
+        
+        <div style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: #ef4444;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+        </div>
+
+        <h3 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 18px; font-weight: 600;">
+            {% if current_lang == 'th' %}ยืนยันการลบการแจ้งเตือน{% else %}Confirm Alert Deletion{% endif %}
+        </h3>
+        <p style="margin: 0 0 24px 0; color: #94a3b8; font-size: 13px;">
+            {% if current_lang == 'th' %}คุณต้องการลบการแจ้งเตือนนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้{% else %}Are you sure you want to delete this alert? This action cannot be undone.{% endif %}
+        </p>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button type="button" onclick="closeDeleteConfirmModal()" style="flex: 1; background: rgba(255,255,255,0.05); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                {% if current_lang == 'th' %}ยกเลิก{% else %}Cancel{% endif %}
+            </button>
+            <a id="confirmDeleteBtn" href="#" style="flex: 1; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #f8fafc; border: none; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 13px; text-decoration: none; display: inline-block; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                {% if current_lang == 'th' %}ลบข้อมูล{% else %}Delete{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+let searchTimeout = null;
+
+function openCreateAlertModal() {
+    document.getElementById('createAlertModal').style.display = 'flex';
+}
+
+function closeCreateAlertModal() {
+    document.getElementById('createAlertModal').style.display = 'none';
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+
+let deleteTargetUrl = "";
+
+function openDeleteConfirmModal(deleteUrl) {
+    deleteTargetUrl = deleteUrl;
+    document.getElementById('confirmDeleteBtn').setAttribute('href', deleteTargetUrl);
+    document.getElementById('deleteConfirmModal').style.display = 'flex';
+}
+
+function closeDeleteConfirmModal() {
+    document.getElementById('deleteConfirmModal').style.display = 'none';
+    deleteTargetUrl = "";
+}
+
+function searchLiveStocks(query) {
+    const box = document.getElementById('stockSuggestionsBox');
+    query = query.trim();
+
+    if (query.length === 0) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/search_stocks?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(results => {
+                let html = "";
+                if (results.length > 0) {
+                    results.forEach(stock => {
+                        html += `
+                            <div class="stock-item" onclick="selectStockSymbol('${stock.symbol}')" style="padding: 11px 14px; border-bottom: 1px solid rgba(51, 65, 85, 0.4); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'" onmouseout="this.style.background='transparent'">
+                                <div>
+                                    <div style="color: #38bdf8; font-weight: 700; font-size: 14px;">${stock.symbol}</div>
+                                    <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">${stock.name}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="color: #64748b; font-size: 11px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">${stock.exchange}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    box.innerHTML = html;
+                    box.style.display = "block";
+                } else {
+                    box.style.display = "none";
+                }
+            });
+    }, 300);
+}
+
+function selectStockSymbol(symbol) {
+    document.getElementById('alertSymbolInput').value = symbol;
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    
+    const borderColor = type === 'success' ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+    const glowColor = type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+    const iconColor = type === 'success' ? '#22c55e' : '#ef4444';
+    
+    const iconSvg = type === 'success' 
+        ? `<polyline points="20 6 9 17 4 12"></polyline>` 
+        : `<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>`;
+
+    toast.style.cssText = `
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid ${borderColor};
+        box-shadow: 0 10px 30px -10px ${glowColor};
+        color: #f8fafc;
+        padding: 14px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: auto;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 280px;
+    `;
+
+    toast.innerHTML = `
+        <div style="width: 24px; height: 24px; background: ${glowColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: ${iconColor};">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>
+        </div>
+        <div style="flex-grow: 1;">${message}</div>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function submitAlert(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+
+    fetch('/alerts', { method: 'POST', body: formData })
+    .then(response => {
+        if (response.ok) {
+            closeCreateAlertModal();
+            form.reset();
+            showToast("{% if current_lang == 'th' %}สร้างการแจ้งเตือนราคาสำเร็จ!{% else %}Alert created successfully!{% endif %}", "success");
+            setTimeout(() => window.location.reload(), 1200);
+        } else {
+            showToast("{% if current_lang == 'th' %}เกิดข้อผิดพลาดในการบันทึกข้อมูล{% else %}Error saving data{% endif %}", "error");
+        }
+    })
+    .catch(() => {
+        showToast("{% if current_lang == 'th' %}ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้{% else %}Unable to connect to server{% endif %}", "error");
+    });
+}
+</script>
+{% endblock %}

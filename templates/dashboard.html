@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Custom Modern FinTech Styles */
+    .fin-card {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(51, 65, 85, 0.6);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fin-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.15);
+        transform: translateY(-2px);
+    }
+    .badge-bullish {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+    .badge-bearish {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+    .badge-neutral {
+        background: rgba(148, 163, 184, 0.15);
+        color: #cbd5e1;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+    .data-table tbody tr {
+        transition: background 0.2s ease;
+    }
+    .data-table tbody tr:hover {
+        background: rgba(30, 41, 59, 0.5);
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(15px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="width: 8px; height: 8px; background: #38bdf8; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #38bdf8;"></span>
+            <p style="color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; font-weight: 600;">Dashboard / Overview</p>
+        </div>
+        <h2 style="margin: 0; font-size: 28px; font-weight: 700; color: #f8fafc; letter-spacing: -0.5px;">{{ t('dash_title') }}</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin: 6px 0 0 0;">{{ t('dash_subtitle') }}</p>
+    </div>
+    <!-- ปุ่ม Create Alert -->
+    <button onclick="openCreateAlertModal()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4); transition: all 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        {{ t('create_alert') }}
+    </button>
+</div>
+
+<!-- ส่วนแสดง Market Overview -->
+<div class="market-overview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 25px;">
+    {% for item in market_overview %}
+    <div class="fin-card" style="padding: 18px 18px 0 18px; border-radius: 12px; position: relative; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h4 style="margin: 0; color: #94a3b8; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;">{{ item.name }}</h4>
+                <p style="font-size: 20px; font-weight: 700; margin: 6px 0 2px 0; color: #f8fafc; letter-spacing: -0.3px;">${{ item.price }}</p>
+            </div>
+            <div style="padding: 6px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                {% if item.change >= 0 %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                {% else %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                {% endif %}
+            </div>
+        </div>
+        <p class="{{ 'text-green' if item.change >= 0 else 'text-red' }}" style="margin: 0 0 12px 0; font-size: 12px; font-weight: 600;">
+            {{ '+' if item.change >= 0 else '' }}{{ item.change }}%
+        </p>
+        <div style="height: 50px; margin: 0 -18px 0 -18px; position: relative;">
+            {% set prices = item.chart_prices %}
+            {% if prices and prices | length > 1 %}
+                {% set min_p = prices | min %}
+                {% set max_p = prices | max %}
+                {% set range_p = (max_p - min_p) if (max_p - min_p) > 0 else 1 %}
+                {% set p0 = 45 - ((prices[0] - min_p) / range_p * 32) %}
+                {% set p1 = 45 - ((prices[1] - min_p) / range_p * 32) %}
+                {% set p2 = 45 - ((prices[2] - min_p) / range_p * 32) if prices | length > 2 else p1 %}
+                {% set p3 = 45 - ((prices[3] - min_p) / range_p * 32) if prices | length > 3 else p2 %}
+                {% set p4 = 45 - ((prices[-1] - min_p) / range_p * 32) %}
+                {% set stroke_color = '#22c55e' if item.change >= 0 else '#ef4444' %}
+                <svg viewBox="0 0 200 50" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block;">
+                    <path d="M 0 {{ p0 }} L 50 {{ p1 }} L 100 {{ p2 }} L 150 {{ p3 }} L 200 {{ p4 }}" 
+                          fill="none" stroke="{{ stroke_color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- การ์ดสถิติต่างๆ -->
+<div class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 25px;">
+    <div class="fin-card" style="padding: 20px; border-radius: 12px; display: flex; align-items: flex-start; justify-content: space-between;">
+        <div>
+            <h4 style="margin: 0 0 6px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ t('total_watchlist') }}</h4>
+            <p class="stat-number" id="stat-watchlist" style="margin: 0; font-size: 26px; color: #f8fafc; font-weight: 700;">{{ total_watchlist }}</p>
+            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 11px;">{{ t('active_tracked_assets') }}</p>
+        </div>
+        <div style="padding: 10px; background: rgba(56, 189, 248, 0.1); border-radius: 10px; color: #38bdf8;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+    </div>
+    <div class="fin-card" style="padding: 20px; border-radius: 12px; display: flex; align-items: flex-start; justify-content: space-between;">
+        <div>
+            <h4 style="margin: 0 0 6px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ t('active_alerts') }}</h4>
+            <p class="stat-number" id="stat-active-alerts" style="margin: 0; font-size: 26px; color: #f8fafc; font-weight: 700;">{{ active_alerts }}</p>
+            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 11px;">{{ t('real_time_triggers') }}</p>
+        </div>
+        <div style="padding: 10px; background: rgba(234, 179, 8, 0.1); border-radius: 10px; color: #eab308;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+    </div>
+    <div class="fin-card" style="padding: 20px; border-radius: 12px; display: flex; align-items: flex-start; justify-content: space-between;">
+        <div>
+            <h4 style="margin: 0 0 6px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ t('bullish_signals') }}</h4>
+            <p class="stat-number text-green" id="stat-bullish" style="margin: 0; font-size: 26px; font-weight: 700;">{{ bullish_count }}</p>
+            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 11px;">{{ t('ai_positive_momentum') }}</p>
+        </div>
+        <div style="padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 10px; color: #22c55e;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        </div>
+    </div>
+    <div class="fin-card" style="padding: 20px; border-radius: 12px; display: flex; align-items: flex-start; justify-content: space-between;">
+        <div>
+            <h4 style="margin: 0 0 6px 0; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ t('bearish_signals') }}</h4>
+            <p class="stat-number text-red" id="stat-bearish" style="margin: 0; font-size: 26px; font-weight: 700;">{{ bearish_count }}</p>
+            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 11px;">{{ t('ai_negative_momentum') }}</p>
+        </div>
+        <div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; color: #ef4444;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+        </div>
+    </div>
+</div>
+
+<!-- ตาราง Watchlist Summary -->
+<div class="fin-card mt-20" style="padding: 22px; border-radius: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h3 style="margin: 0; font-size: 17px; font-weight: 600; color: #f8fafc;">{{ t('my_watchlist_portfolio') }}</h3>
+            <p style="margin: 2px 0 0 0; color: #94a3b8; font-size: 12px;">{{ t('real_time_tracking_matrix') }}</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 5px 12px; border-radius: 20px;">
+            <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span>
+            <span style="color: #4ade80; font-size: 11px; font-weight: 600;">{{ t('websocket_connected') }}</span>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 1px solid rgba(51, 65, 85, 0.8); text-align: left; color: #94a3b8; font-size: 11px; letter-spacing: 0.8px;">
+                    <th style="padding: 12px 14px;">{{ t('th_symbol') }}</th>
+                    <th style="padding: 12px 14px;">{{ t('th_company') }}</th>
+                    <th style="padding: 12px 14px;">{{ t('th_price') }}</th>
+                    <th style="padding: 12px 14px;">{{ t('th_change') }}</th>
+                    <th style="padding: 12px 14px;">{{ t('th_ema_trend') }}</th>
+                    <th style="padding: 12px 14px;">{{ t('th_ai_signal') }}</th>
+                </tr>
+            </thead>
+            <tbody id="dashboard-table-body">
+                {% for stock in watchlist %}
+                {% set sig = stock.ai_signal if stock.ai_signal else 'NEUTRAL' %}
+                {% set badge_class = 'badge-bullish' if sig == 'BULLISH' else ('badge-bearish' if sig == 'BEARISH' else 'badge-neutral') %}
+                <tr id="row-{{ stock.symbol }}" style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+                    <td style="padding: 14px;"><a href="/stocks/{{ stock.symbol }}" style="color: #38bdf8; text-decoration: none; font-weight: 700; letter-spacing: 0.5px;">{{ stock.symbol }}</a></td>
+                    <td style="padding: 14px; color: #f8fafc; font-weight: 500;">{{ stock.name }}</td>
+                    <td style="padding: 14px; color: #f8fafc; font-weight: 600;" class="stock-price">${{ stock.price }}</td>
+                    <td style="padding: 14px; font-weight: 600;" class="stock-change {{ 'text-green' if stock.change >= 0 else 'text-red' }}">{{ '+' if stock.change >= 0 else '' }}{{ stock.change }}%</td>
+                    <td style="padding: 14px; color: #cbd5e1; font-family: monospace;" class="stock-ema">{{ stock.ema50 }}</td>
+                    <td style="padding: 14px;"><span class="{{ badge_class }} stock-signal">{{ sig }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- PREMIUM CREATE ALERT POPUP MODAL -->
+<div id="createAlertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.8); backdrop-filter: blur(12px); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.25); width: 100%; max-width: 480px; border-radius: 20px; padding: 28px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.1); position: relative; animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">SYSTEM ALERT</span>
+                </div>
+                <h3 style="margin: 0; color: #f8fafc; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">สร้างการแจ้งเตือนราคา</h3>
+                <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 13px;">ตั้งค่าเงื่อนไขเพื่อรับการแจ้งเตือนราคาหุ้นแบบเรียลไทม์</p>
+            </div>
+            <button onclick="closeCreateAlertModal()" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; cursor: pointer; font-size: 14px; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'; this.style.borderColor='rgba(239, 68, 68, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.color='#94a3b8'; this.style.borderColor='rgba(255, 255, 255, 0.1)'">✕</button>
+        </div>
+
+        <!-- Form -->
+        <form id="createAlertForm" onsubmit="submitAlert(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <!-- Stock Symbol -->
+                <div style="position: relative;">
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">ชื่อหุ้น (Stock Symbol)</label>
+                    <input type="text" id="alertSymbolInput" name="symbol" placeholder="เช่น NVDA, AAPL" autocomplete="off" required style="width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='rgba(51, 65, 85, 0.8)'" oninput="searchLiveStocks(this.value)">
+                    
+                    <div id="stockSuggestionsBox" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 10px; max-height: 200px; overflow-y: auto; z-index: 20; margin-top: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.7);"></div>
+                </div>
+                
+                <!-- Alert Type -->
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">ประเภทการแจ้งเตือน</label>
+                    <select name="alert_type" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(51, 65, 85, 0.8); color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='rgba(51, 65, 85, 0.8)'">
+                        <option value="PRICE_ABOVE">ราคาสูงกว่า (PRICE ABOVE)</option>
+                        <option value="PRICE_BELOW">ราคาต่ำกว่า (PRICE BELOW)</option>
+                        <option value="PERCENT_CHANGE">เปอร์เซ็นต์เปลี่ยนแปลง (% CHANGE)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                <!-- Target Price -->
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">ราคาเป้าหมาย (Target Price)</label>
+                    <input type="number" step="any" name="target_price" placeholder="0.00" required style="width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='rgba(51, 65, 85, 0.8)'">
+                </div>
+
+                <!-- Range % -->
+                <div>
+                    <label style="display: block; color: #cbd5e1; font-size: 12px; font-weight: 600; margin-bottom: 6px;">ช่วงราคา % (Range %)</label>
+                    <input type="text" name="range_percent" placeholder="0" value="0" style="width: 100%; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); color: #f8fafc; padding: 11px 14px; border-radius: 10px; font-size: 13px; outline: none; box-sizing: border-box; transition: border-color 0.2s;" onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='rgba(51, 65, 85, 0.8)'">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(51, 65, 85, 0.4); padding-top: 16px;">
+                <button type="button" onclick="closeCreateAlertModal()" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1); padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'">ยกเลิก</button>
+                <button type="submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 10px 22px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">สร้างการแจ้งเตือน</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- โหลดไลบรารี Socket.io และสคริปต์อัปเดต Real-time -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+let searchTimeout = null;
+const socket = io();
+
+// รับข้อมูลอัปเดตแบบ Real-time ผ่าน WebSocket ทันทีที่เซิร์ฟเวอร์ส่งข้อมูลมา
+socket.on('stock_update', function(data) {
+    let bullishCount = 0;
+    let bearishCount = 0;
+    const tableBody = document.getElementById('dashboard-table-body');
+
+    let htmlRows = '';
+    data.forEach(stock => {
+        if (stock.ai_signal === 'BULLISH') bullishCount++;
+        if (stock.ai_signal === 'BEARISH') bearishCount++;
+
+        const changeClass = stock.change >= 0 ? 'text-green' : 'text-red';
+        const changePrefix = stock.change >= 0 ? '+' : '';
+        const sig = stock.ai_signal || 'NEUTRAL';
+        const badgeClass = sig === 'BULLISH' ? 'badge-bullish' : (sig === 'BEARISH' ? 'badge-bearish' : 'badge-neutral');
+
+        htmlRows += `
+            <tr id="row-${stock.symbol}" style="border-bottom: 1px solid rgba(51, 65, 85, 0.4);">
+                <td style="padding: 14px;"><a href="/stocks/${stock.symbol}" style="color: #38bdf8; text-decoration: none; font-weight: 700; letter-spacing: 0.5px;">${stock.symbol}</a></td>
+                <td style="padding: 14px; color: #f8fafc; font-weight: 500;">${stock.name}</td>
+                <td style="padding: 14px; color: #f8fafc; font-weight: 600;" class="stock-price">$${stock.price}</td>
+                <td style="padding: 14px; font-weight: 600;" class="stock-change ${changeClass}">${changePrefix}${stock.change}%</td>
+                <td style="padding: 14px; color: #cbd5e1; font-family: monospace;" class="stock-ema">${stock.ema50}</td>
+                <td style="padding: 14px;"><span class="${badgeClass} stock-signal">${sig}</span></td>
+            </tr>
+        `;
+    });
+
+    if (tableBody && htmlRows !== '') {
+        tableBody.innerHTML = htmlRows;
+    }
+
+    const statWatchlist = document.getElementById('stat-watchlist');
+    const statBullish = document.getElementById('stat-bullish');
+    const statBearish = document.getElementById('stat-bearish');
+
+    if (statWatchlist) statWatchlist.innerText = data.length;
+    if (statBullish) statBullish.innerText = bullishCount;
+    if (statBearish) statBearish.innerText = bearishCount;
+});
+
+function openCreateAlertModal() {
+    document.getElementById('createAlertModal').style.display = 'flex';
+}
+
+function closeCreateAlertModal() {
+    document.getElementById('createAlertModal').style.display = 'none';
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+
+function searchLiveStocks(query) {
+    const box = document.getElementById('stockSuggestionsBox');
+    query = query.trim();
+
+    if (query.length === 0) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetch(`/api/search_stocks?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(results => {
+                let html = "";
+                if (results.length > 0) {
+                    results.forEach(stock => {
+                        html += `
+                            <div class="stock-item" onclick="selectStockSymbol('${stock.symbol}')" style="padding: 11px 14px; border-bottom: 1px solid rgba(51, 65, 85, 0.4); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.background='rgba(30, 41, 59, 0.8)'" onmouseout="this.style.background='transparent'">
+                                <div>
+                                    <div style="color: #38bdf8; font-weight: 700; font-size: 14px;">${stock.symbol}</div>
+                                    <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">${stock.name}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="color: #64748b; font-size: 11px; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">${stock.exchange}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    box.innerHTML = html;
+                    box.style.display = "block";
+                } else {
+                    box.style.display = "none";
+                }
+            });
+    }, 300);
+}
+
+function selectStockSymbol(symbol) {
+    document.getElementById('alertSymbolInput').value = symbol;
+    document.getElementById('stockSuggestionsBox').style.display = 'none';
+}
+
+// ฟังก์ชันส่งข้อมูลฟอร์มแบบ AJAX และแสดง Toast สวยงามแทน alert() เดิม
+function submitAlert(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData();
+    formData.append('symbol', form.symbol.value.toUpperCase());
+    formData.append('alert_type', form.alert_type.value);
+    formData.append('target', form.target_price.value);
+
+    fetch('/alerts', { method: 'POST', body: formData })
+    .then(response => {
+        if (response.ok) {
+            closeCreateAlertModal();
+            form.reset();
+            showToast("สร้างการแจ้งเตือนราคาสำเร็จ!", "success");
+        } else {
+            showToast("เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
+        }
+    })
+    .catch(error => {
+        showToast("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
+    });
+}
+
+// ฟังก์ชันสร้าง Toast Notification ลอยมุมขวาบน
+function showToast(message, type = 'success') {
+    const existingToast = document.getElementById('custom-toast');
+    if (existingToast) existingToast.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'custom-toast';
+    
+    const borderColor = type === 'success' ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+    const iconColor = type === 'success' ? '#4ade80' : '#f87171';
+    const iconSvg = type === 'success' 
+        ? '<polyline points="20 6 9 17 4 12"></polyline>' 
+        : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>';
+
+    toast.style.cssText = `
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+        backdrop-filter: blur(12px);
+        border: 1px solid ${borderColor};
+        color: #f8fafc;
+        padding: 14px 20px;
+        border-radius: 12px;
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(37, 99, 235, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 9999;
+        font-size: 13px;
+        font-weight: 500;
+        animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    `;
+
+    toast.innerHTML = `
+        <div style="width: 22px; height: 22px; border-radius: 50%; background: ${type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>
+        </div>
+        <div>${message}</div>
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+</script>
+{% endblock %}

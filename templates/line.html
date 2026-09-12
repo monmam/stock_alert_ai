@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>LINE Notification Settings</h2>
+<div class="card">
+    <form action="{{ url_for('line_page') }}" method="POST">
+        <div class="form-check">
+            <label><input type="checkbox" name="price_alert" {{ 'checked' if settings.get('price_alert') == '1' }}> Price Alert Notifications</label>
+        </div>
+        <div class="form-check">
+            <label><input type="checkbox" name="ema_alert" {{ 'checked' if settings.get('ema_alert') == '1' }}> EMA Cross Notifications</label>
+        </div>
+        <div class="form-check">
+            <label><input type="checkbox" name="bullish_signal" {{ 'checked' if settings.get('bullish_signal') == '1' }}> Bullish Signal Alerts</label>
+        </div>
+        <div class="form-check">
+            <label><input type="checkbox" name="bearish_signal" {{ 'checked' if settings.get('bearish_signal') == '1' }}> Bearish Signal Alerts</label>
+        </div>
+        <div class="form-check">
+            <label><input type="checkbox" name="daily_summary" {{ 'checked' if settings.get('daily_summary') == '1' }}> Daily Market Summary</label>
+        </div>
+        <button type="submit" class="btn btn-primary mt-20">Save Settings</button>
+    </form>
+</div>
+{% endblock %}

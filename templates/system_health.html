@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+    
+    <!-- Header Section -->
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: #38bdf8; letter-spacing: 1px; text-transform: uppercase;">Service Observability</span>
+        <h1 style="margin: 0; font-size: 26px; color: #f8fafc; font-weight: 700; letter-spacing: -0.5px;">System Health</h1>
+        <span style="font-size: 13px; color: #94a3b8;">Real-time microservices and external provider diagnostics</span>
+    </div>
+
+    <!-- Health Cards Grid (3 columns layout, clean fintech borders) -->
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(300px, 1fr)); gap: 20px;">
+        
+        <!-- API Server -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">API Server</span>
+                <span style="font-size: 12px; color: #64748b;">Flask API endpoint status</span>
+            </div>
+            <span id="badge-api" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+        <!-- Database -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">Database</span>
+                <span style="font-size: 12px; color: #64748b;">SQLAlchemy connection status</span>
+            </div>
+            <span id="badge-db" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+        <!-- Market Data -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">Market Data</span>
+                <span style="font-size: 12px; color: #64748b;">Market data provider status</span>
+            </div>
+            <span id="badge-market" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+        <!-- Scheduler -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">Scheduler</span>
+                <span style="font-size: 12px; color: #64748b;">Alert monitoring scheduler</span>
+            </div>
+            <span id="badge-scheduler" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+        <!-- LINE Service -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">LINE Service</span>
+                <span style="font-size: 12px; color: #64748b;">LINE delivery service</span>
+            </div>
+            <span id="badge-line" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+        <!-- AI Service -->
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 22px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); transition: border-color 0.2s;" onmouseover="this.style.borderColor='#334155'" onmouseout="this.style.borderColor='#1e293b'">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 15px; font-weight: 600; color: #f8fafc;">AI Service</span>
+                <span style="font-size: 12px; color: #64748b;">AI analysis provider</span>
+            </div>
+            <span id="badge-ai" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">CHECKING</span>
+        </div>
+
+    </div>
+
+    <!-- Status Bar & Retry Button (Matching Dashboards Global Card Style) -->
+    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; padding: 24px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4);">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span id="system-status-title" style="font-size: 15px; font-weight: 600; color: #38bdf8;">Checking system connection...</span>
+            <span id="system-status-desc" style="font-size: 13px; color: #64748b;">Please wait while we verify all backend microservices and data providers.</span>
+        </div>
+        <button onclick="checkSystemHealth()" style="background: #0ea5e9; border: none; color: #ffffff; padding: 10px 22px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 12px rgba(14,165,233,0.3);" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">
+            Retry Check
+        </button>
+    </div>
+
+</div>
+
+<script>
+function setBadge(elementId, status) {
+    const el = document.getElementById(elementId);
+    el.innerText = status;
+    if (status === 'HEALTHY' || status === 'RUNNING' || status === 'READY') {
+        el.style.background = 'rgba(34,197,94,0.1)';
+        el.style.color = '#22c55e';
+        el.style.borderColor = 'rgba(34,197,94,0.2)';
+    } else {
+        el.style.background = 'rgba(239,68,68,0.1)';
+        el.style.color = '#ef4444';
+        el.style.borderColor = 'rgba(239,68,68,0.2)';
+    }
+}
+
+function checkSystemHealth() {
+    ['badge-api', 'badge-db', 'badge-market', 'badge-scheduler', 'badge-line', 'badge-ai'].forEach(id => {
+        const el = document.getElementById(id);
+        el.innerText = 'CHECKING';
+        el.style.background = 'rgba(56,189,248,0.1)';
+        el.style.color = '#38bdf8';
+        el.style.borderColor = 'rgba(56,189,248,0.2)';
+    });
+
+    document.getElementById('system-status-title').innerText = "Checking system connection...";
+    document.getElementById('system-status-desc').innerText = "Please wait while we verify all backend microservices and data providers.";
+
+    fetch('/api/system_health')
+        .then(res => res.json())
+        .then(data => {
+            setBadge('badge-api', data.api_server);
+            setBadge('badge-db', data.database);
+            setBadge('badge-market', data.market_data);
+            setBadge('badge-scheduler', data.scheduler);
+            setBadge('badge-line', data.line_service);
+            setBadge('badge-ai', data.ai_service);
+
+            document.getElementById('system-status-title').innerText = "All systems operational";
+            document.getElementById('system-status-desc').innerText = "Backend health endpoint connected successfully. All services running normal.";
+        })
+        .catch(err => {
+            console.error(err);
+            ['badge-api', 'badge-db', 'badge-market', 'badge-scheduler', 'badge-line', 'badge-ai'].forEach(id => {
+                setBadge(id, 'UNAVAILABLE');
+            });
+            document.getElementById('system-status-title').innerText = "Connection Failed";
+            document.getElementById('system-status-desc').innerText = "Could not connect to the backend health endpoint. Please verify server status.";
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    checkSystemHealth();
+});
+</script>
+{% endblock %}

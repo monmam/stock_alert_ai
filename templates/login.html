@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Stock Trading System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #07090e;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Stock Chart Background Animation */
+        .stock-bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        /* เส้นกราฟหุ้นวิ่งพาดผ่านจอ */
+        .stock-line {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 100px,
+                rgba(59, 130, 246, 0.03) 100px,
+                rgba(59, 130, 246, 0.03) 200px
+            );
+        }
+
+        .chart-svg {
+            position: absolute;
+            bottom: -10%;
+            left: 0;
+            width: 120%;
+            height: 70%;
+            animation: pulseChart 8s infinite alternate ease-in-out;
+        }
+
+        .chart-path {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: drawLine 6s infinite linear;
+        }
+
+        @keyframes drawLine {
+            0% {
+                stroke-dashoffset: 2000;
+            }
+            50% {
+                stroke-dashoffset: 0;
+            }
+            100% {
+                stroke-dashoffset: -2000;
+            }
+        }
+
+        @keyframes pulseChart {
+            0% { transform: translateY(0) scale(1); opacity: 0.4; }
+            100% { transform: translateY(-20px) scale(1.02); opacity: 0.8; }
+        }
+
+        /* แสงออร่าประกอบฉาก */
+        .glow-orb {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(7, 9, 14, 0) 70%);
+            border-radius: 50%;
+            top: -10%;
+            right: -10%;
+            filter: blur(60px);
+            animation: moveOrb 10s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveOrb {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50px, 60px); }
+        }
+
+        /* Card Login Style */
+        .card-auth {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            z-index: 1;
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff !important;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+
+        .form-control:focus {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #3b82f6;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+        }
+
+        .input-group-text {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            border-radius: 0.75rem 0 0 0.75rem;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .brand-icon {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 auto 1.25rem auto;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- แอนิเมชันพื้นหลังกราฟหุ้นและแสงออร่า -->
+    <div class="stock-bg-animation">
+        <div class="stock-line"></div>
+        <div class="glow-orb"></div>
+        <svg class="chart-svg" viewBox="0 0 1000 300" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3b82f6" />
+                    <stop offset="50%" stop-color="#10b981" />
+                    <stop offset="100%" stop-color="#8b5cf6" />
+                </linearGradient>
+            </defs>
+            <path class="chart-path" d="M0,250 Q150,100 300,180 T600,80 T900,150 T1200,50" />
+        </svg>
+    </div>
+
+    <div class="card-auth">
+        <div class="text-center mb-4">
+            <div class="brand-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="fw-bold text-white tracking-wide">Welcome Back</h3>
+            <p class="text-light small opacity-75">เข้าสู่ระบบเพื่อจัดการพอร์ตและสัญญาณเทรด</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }} bg-opacity-10 border-0 text-{{ 'danger' if category == 'danger' else 'success' }} py-2 px-3 small rounded-3 mb-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i>{{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login_page') }}">
+            <div class="mb-3">
+                <label for="username" class="form-label">ชื่อผู้ใช้ (Username)</label>
+                <div class="input-group">
+                    <span class="input-group-text border-end-0"><i class="fas fa-user"></i></span>
+                    <input type="text" class="form-control border-start-0" id="username" name="username" required placeholder="กรอกชื่อผู้ใช้ของคุณ" style="border-radius: 0 0.75rem 0.75rem 0;">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label">รหัสผ่าน (Password)</label>
+                <div class="input-group">
+                    <span class="input-group-text border-end-0"><i class="fas fa-lock"></i></span>
+                    <input type="password" class="form-control border-start-0" id="password" name="password" required placeholder="••••••••" style="border-radius: 0 0.75rem 0.75rem 0;">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 mb-3">เข้าสู่ระบบ</button>
+        </form>
+
+        <div class="text-center">
+            <p class="text-light small opacity-75 mb-0">ยังไม่มีบัญชีผู้ใช้? <a href="{{ url_for('register_page') }}" class="text-primary text-decoration-none fw-semibold">สมัครสมาชิก</a></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

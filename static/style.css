@@ -1,0 +1,181 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #0f172a; color: #f8fafc; }
+.app-container { display: flex; height: 100vh; overflow: hidden; }
+
+/* Sidebar */
+.sidebar { width: 260px; background-color: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; }
+.sidebar-brand { padding: 20px; font-size: 1.2rem; border-bottom: 1px solid #334155; color: #38bdf8; }
+.sidebar-nav { display: flex; flex-direction: column; padding: 15px; gap: 8px; }
+.sidebar-nav a { color: #94a3b8; text-decoration: none; padding: 10px 15px; border-radius: 8px; transition: 0.2s; }
+.sidebar-nav a:hover { background-color: #334155; color: #f8fafc; }
+
+/* Main Content */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+.topbar { height: 60px; background-color: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.content-body { padding: 25px; flex: 1; }
+
+/* Cards */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.stat-number { font-size: 1.8rem; font-weight: bold; margin-top: 10px; color: #38bdf8; }
+
+/* Tables */
+.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; font-size: 0.95rem; }
+.data-table th { color: #94a3b8; font-weight: 600; }
+.data-table a { color: #38bdf8; text-decoration: none; }
+
+/* Badges & Colors */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+.badge-green { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+.badge-red { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+.badge-blue { background-color: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+.text-green { color: #34d399 !important; }
+.text-red { color: #f87171 !important; }
+
+/* Forms & Buttons */
+.form-control { width: 100%; padding: 10px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #f8fafc; margin-top: 5px; }
+.btn { padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+.btn-primary { background-color: #3b82f6; color: #fff; }
+.btn-primary:hover { background-color: #2563eb; }
+.btn-danger { background-color: #ef4444; color: #fff; }
+.btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.form-check { margin-bottom: 12px; }
+
+/* Utilities */
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+
+/* --- ปรับแต่งหน้า Watchlist ให้พรีเมียม --- */
+
+/* กล่องฟอร์มเพิ่มหุ้น */
+.watchlist-form-container, .card form, div[style*="background-color: #0b1120"] {
+    background: #0b1120;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 24px;
+}
+
+/* ช่องกรอกชื่อหุ้น */
+input[type="text"], .form-control {
+    background-color: #060913 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    color: #f8fafc !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus, .form-control:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* ปุ่ม Add Stock */
+button.btn-primary, .btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 20px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+    transition: all 0.2s ease;
+}
+
+button.btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* ตารางข้อมูลหุ้น */
+table.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+table.data-table th {
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+table.data-table td {
+    padding: 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #f1f5f9;
+}
+
+table.data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+table.data-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ป้ายสถานะ AI Signal แบบพรีเมียม */
+.badge-bullish, span:has-text("BULLISH"), .badge-green {
+    background-color: rgba(34, 197, 94, 0.12) !important;
+    color: #22c55e !important;
+    border: 1px solid rgba(34, 197, 94, 0.2) !important;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    display: inline-block;
+}
+
+.badge-bearish, span:has-text("BEARISH"), .badge-red {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    display: inline-block;
+}
+
+.badge-neutral, span:has-text("NEUTRAL") {
+    background-color: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    display: inline-block;
+}
+
+/* ปุ่ม Remove / Delete */
+.btn-danger, .btn-remove {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-danger:hover, .btn-remove:hover {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
