@@ -16,12 +16,12 @@ Flask-Login==0.6.3
 Flask-SocketIO==5.3.6
 Flask-SQLAlchemy==3.1.1
 frozendict==2.4.4
-google-ai-generativelanguage==0.6.4
+google-ai-generativelanguage==0.6.15
 google-api-core==2.19.0
 google-api-python-client==2.139.0
 google-auth==2.32.0
 google-auth-httplib2==0.2.0
-google-generativeai==0.7.2
+google-generativeai==0.8.3
 googleapis-common-protos==1.63.2
 greenlet==3.0.3
 grpcio==1.65.1
